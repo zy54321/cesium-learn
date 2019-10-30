@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8">
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Hello World!</title>
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <style>
+        @import url(../Build/Cesium/Widgets/widgets.css);
+
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="credit"></div>
+    <div id="cesiumContainer"></div>
+    <script>
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            // 界面UI功能隐藏设置，方法一通过JS控制，方法二通过CSS控制
+            // 查找位置工具
+            geocoder: false,
+            // 视角返回初始位置
+            homeButton: false,
+            // 选择视角模式，包括3D，2D，哥伦布视图（CV）
+            sceneModePicker: false,
+            // 图层选择器，选择要显示的地图服务和地形服务
+            baseLayerPicker: true,
+            // 导航帮助按钮，显示默认的地图控制帮助
+            navigationHelpButton: false,
+            // 左下角动画插件隐藏
+            animation: false,
+            // 时间线，指示当前时间，并允许用户跳到特定时间
+            timeline: false,
+            // creditContainer 包含的DOM元素或ID CreditDisplay。如果未指定，则将积分添加到窗口小部件的底部。
+            creditContainer: "credit",
+            // 全屏按钮
+            fullscreenButton: false,
+            // vr按钮
+            vrButton: true,
+        });
+
+        // 绘制立方体，通过 Entity 添加形状
+        var redBox = viewer.entities.add({
+            name: 'Red box with black outline',
+            // fromDegrees 从以度为单位的经度和纬度值返回Cartesian3位置。
+            /*
+            名称	    类型	    默认	         描述
+            longitude	数		                    经度，以度为单位
+            latitude	数		                    纬度，以度为单位
+            height	    数	        0.0	            可选 椭圆体上方的高度（以米为单位）。
+            ellipsoid	椭球	    Ellipsoid.WGS84	可选 位置所在的椭圆体。
+            result	    Cartesian3		            optional 要存储结果的对象。
+            */
+            position: Cesium.Cartesian3.fromDegrees(-107.0, 40.0, 300000.0),
+            // 声明一个立方体盒子
+            box: {
+                // dimensions 一个Cartesian3属性，指定框的长度，宽度和高度。
+                dimensions: new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+                // material 指定用于填充框的材质。
+                material: Cesium.Color.GREEN.withAlpha(0.5),
+                // outline 指定框是否为轮廓。
+                outline: true,
+                // outlineColor 指定Color轮廓的属性
+                outlineColor: Cesium.Color.YELLOW
+            }
+        });
+        viewer.zoomTo(viewer.entities);
+
+        /*
+        设置材质有两种方法
+        第一种是通过 Material 属性设置，在官网 API 有说明
+        第二种是通过 MaterialProperty 方法
+        MaterialProperty 有一下子类：
+        ColorMaterialProperty 颜色材料属性
+        ImageMaterialProperty 图像材料属性
+        CheckerboardMaterialProperty 棋盘材料属性
+        StripeMaterialProperty 条纹材料属性
+        GridMaterialProperty 网格材质属性
+        PolylineGlowMaterialProperty 折线发光材料属性
+        PolylineOutlineMaterialProperty 折线轮廓材料属性
+        */
+
+        //完整的这么写
+        //方法一，构造时赋材质
+        var entity = viewer.entities.add({
+            position: Cesium.Cartesian3.fromDegrees(-103.0, 40.0),
+            // 椭圆
+            ellipse: {
+                semiMinorAxis: 400000.0,
+                semiMajorAxis: 400000.0,
+                material: Cesium.Color.BLUE.withAlpha(0.5)//可设置不同的MaterialProperty
+            }
+        });
+        var ellipse = entity.ellipse;
+        ellipse.material = new Cesium.ImageMaterialProperty({
+            image: '../img/1.png',
+            color: Cesium.Color.BLUE.withAlpha(0.5),
+            // 表示x，y方向图片重复数量
+            repeat: new Cesium.Cartesian2(4, 4),
+            // 是否透明，纹理为png图片时候可以设置
+            // transparent: false
+        });
+        //也可以简单的写成
+        // ellipse.material = '../images/cats.jpg';
+
+        //方法二，构造后赋材质
+        // var ellipse = entity.ellipse;
+        // ellipse.material = Cesium.Color.RED;
+    </script>
+</body>
+
+</html>

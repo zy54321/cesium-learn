@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8">
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Hello World!</title>
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <style>
+        @import url(../Build/Cesium/Widgets/widgets.css);
+
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="credit"></div>
+    <div id="cesiumContainer"></div>
+    <script>
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            // 界面UI功能隐藏设置，方法一通过JS控制，方法二通过CSS控制
+            // 查找位置工具
+            geocoder: false,
+            // 视角返回初始位置
+            homeButton: false,
+            // 选择视角模式，包括3D，2D，哥伦布视图（CV）
+            sceneModePicker: false,
+            // 图层选择器，选择要显示的地图服务和地形服务
+            baseLayerPicker: true,
+            // 导航帮助按钮，显示默认的地图控制帮助
+            navigationHelpButton: false,
+            // 左下角动画插件隐藏
+            animation: false,
+            // 时间线，指示当前时间，并允许用户跳到特定时间
+            timeline: false,
+            // creditContainer 包含的DOM元素或ID CreditDisplay。如果未指定，则将积分添加到窗口小部件的底部。
+            creditContainer: "credit",
+            // 全屏按钮
+            fullscreenButton: false,
+            // vr按钮
+            vrButton: true,
+            infoBox: false
+        });
+
+        // 绘制立方体，通过 Entity 添加形状
+        console.log(viewer)
+        var redBox = viewer.entities.add({
+            name: 'Red box with black outline',
+            // fromDegrees 从以度为单位的经度和纬度值返回Cartesian3位置。
+            /*
+            名称	    类型	    默认	         描述
+            longitude	数		                    经度，以度为单位
+            latitude	数		                    纬度，以度为单位
+            height	    数	        0.0	            可选 椭圆体上方的高度（以米为单位）。
+            ellipsoid	椭球	    Ellipsoid.WGS84	可选 位置所在的椭圆体。
+            result	    Cartesian3		            optional 要存储结果的对象。
+            */
+            position: Cesium.Cartesian3.fromDegrees(-107.0, 40.0, 300000.0),
+            // 声明一个立方体盒子
+            box: {
+                // dimensions 一个Cartesian3属性，指定框的长度，宽度和高度。
+                dimensions: new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+                // material 指定用于填充框的材质。
+                material: Cesium.Color.GREEN.withAlpha(0.5),
+                // outline 指定框是否为轮廓。
+                outline: true,
+                // outlineColor 指定Color轮廓的属性
+                outlineColor: Cesium.Color.YELLOW
+            },
+            // label 标签 文字标注，可以设置样式，文字内容，字体，偏移等
+            // label: {
+            //     text: '我是 label 标签',
+            //     font: '114pt monospace',
+            //     style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            //     outlineWidth: 2 ,
+            //     verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            //     pixelOffset: new Cesium.Cartesian2(0, -9),
+            //     outlineColor: new Cesium.Color(0.09, 0.65, 0.165, 0.8),
+            //     backgroundColor: new Cesium.Color(0.9, 0.165, 0.165, 0.8),
+            //     fillColor: new Cesium.Color(0.9, 0.65, 0.165, 0.8)
+            // },
+            // billboard 广告牌
+            // billboard: {
+            //     image: '../img/1.png',
+            //     width: 164,
+            //     height: 164
+            //     pixelOffset: [0, 50]
+            // }
+        });
+        viewer.zoomTo(viewer.entities);
+
+        // polygon 描述信息，只需修改 entity 的 description 属性就可以达到目的
+        var wyoming = viewer.entities.add({
+            name: 'Wyoming',
+            polygon: {
+                hierarchy: Cesium.Cartesian3.fromDegreesArray([
+                    -109.080842, 45.002073,
+                    -105.91517, 45.002073,
+                    -104.058488, 44.996596,
+                    -104.053011, 43.002989,
+                    -104.053011, 41.003906,
+                    -105.728954, 40.998429,
+                    -107.919731, 41.003906,
+                    -109.04798, 40.998429,
+                    -111.047063, 40.998429,
+                    -111.047063, 42.000709,
+                    -111.047063, 44.476286,
+                    -111.05254, 45.002073]),
+                height: 10000,
+                material: Cesium.Color.RED.withAlpha(0.5),
+                outline: true,
+                outlineColor: Cesium.Color.BLACK
+            },
+            // description: 'divID'//方法一
+        });
+
+        //方法二
+        wyoming.description = '\
+<img\
+  width="50%"\
+  style="float:left; margin: 0 1em 1em 0;"\
+  src="//cesiumjs.org/images/2015/02-02/Flag_of_Wyoming.svg"/>\
+<p>\
+  Wyoming is a state in the mountain region of the Western \
+  United States.\
+</p>\
+<p>\
+  Wyoming is the 10th most extensive, but the least populous \
+  and the second least densely populated of the 50 United \
+  States. The western two thirds of the state is covered mostly \
+  with the mountain ranges and rangelands in the foothills of \
+  the eastern Rocky Mountains, while the eastern third of the \
+  state is high elevation prairie known as the High Plains. \
+  Cheyenne is the capital and the most populous city in Wyoming, \
+  with a population estimate of 62,448 in 2013.\
+</p>\
+<p>\
+  Source: \
+  <a style="color: WHITE"\
+    target="_blank"\
+    href="http://en.wikipedia.org/wiki/Wyoming">Wikpedia</a>\
+</p>';
+
+        var rectanglePrimitive = viewer.scene.primitives.add(new Cesium.GroundPrimitive({
+            geometryInstances: new Cesium.GeometryInstance({
+                geometry: new Cesium.CorridorGeometry({
+                    vertexFormat: Cesium.VertexFormat.POSITION_ONLY,
+                    positions: Cesium.Cartesian3.fromDegreesArray([112.82536, 23.071506, 112.82742, 23.067512, 112.828878, 23.064659, 112.830799, 23.060947, 112.832166, 23.058329]),
+                    width: 40
+                }),
+                attributes: {
+                    color: Cesium.ColorGeometryInstanceAttribute.fromColor(new Cesium.Color(0.0, 1.0, 0.0, 0.5))
+                }
+            }),
+            classificationType: Cesium.ClassificationType.TERRAIN
+        }));
+        // viewer.zoomTo(viewer.entities);
+    </script>
+</body>
+
+</html>
