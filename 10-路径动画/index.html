@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8">
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Hello World!</title>
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <style>
+        @import url(../Build/Cesium/Widgets/widgets.css);
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="credit"></div>
+        <div id="cesiumContainer">
+        <!-- <div id="cesiumxin" style="position:fixed;left:0;z-index:99"><a href="http://cesium.xin" style="color:aliceblue;text-decoration:none">cesium中文网 http://cesium.xin </a></div> -->
+    </div>
+    <script>
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            //2.æœ¬åœ°å›¾ç‰‡
+            imageryProvider: new Cesium.SingleTileImageryProvider({
+                url: '../img/worldimage.jpg'
+            }),
+            baseLayerPicker: false,
+        });
+
+        var czml = [{
+            "id": "document",
+            "name": "polygon",
+            "version": "1.0",
+            "clock": {
+                "interval": "2012-08-04T16:00:00Z/2012-08-04T18:00:00Z",
+                "currentTime": "2012-08-04T16:00:00Z",
+                "multiplier": 10
+            }
+        }, {
+            "id": "shape2",
+            "name": "一个方块",
+            "availability": "2012-08-04T16:00:00Z/2012-08-04T18:00:00Z",
+            /*"position" : {
+            	"cartographicDegrees" : [-66.62557, 516.92809, 100.0]
+            },*/
+            "box": {
+                "dimensions": {
+                    "cartesian": [30.0, 30.0, 50.0]
+                },
+                "material": {
+                    // "image": '../img/11.png',
+                    "stripe": {
+                        "orientation": "VERTICAL",
+                        "evenColor": {
+                            "rgba": [10, 21, 20, 210]
+                        },
+                        "oddColor": {
+                            "rgba": [210, 21, 250, 10]
+                        },
+                        "offset": {
+                            "number": 1
+                        },
+                        "repeat": 0.5
+                    }
+                },
+            },
+            "label": {
+                text: '我是 label 标签',
+                font: '74pt monospace',
+                fillColor:  Cesium.Color.BLUE,
+                outlineColor : Cesium.Color.RED,
+                outlineWidth : 20,
+                style : Cesium.LabelStyle.FILL_AND_OUTLINE
+            },
+            "billboard": {
+                image: '../img/1.png',
+                width: 164,
+                height: 164,
+                pixelOffset: [0, 50]
+            },
+            "path": {
+                "material": {
+                    "solidColor": {
+                        "color": {
+                            "interval": "2012-08-04T16:00:00Z/2012-08-04T18:00:00Z",
+                            "rgba": [255, 0, 0, 128]
+                        }
+                    }
+                },
+                "width": [{
+                    "interval": "2012-08-04T16:00:00Z/2012-08-04T18:00:00Z",
+                    "number": 3.0
+                }],
+                "show": [{
+                    "interval": "2012-08-04T16:00:00Z/2012-08-04T18:00:00Z",
+                    "boolean": true
+                }]
+            },
+            "position": {
+                "interpolationAlgorithm": "LAGRANGE",
+                "interpolationDegree": 1,
+                "epoch": "2012-08-04T16:00:00Z",
+                "cartographicDegrees": [
+                    0.0, 118.87841653400005, 30.95679870500004, 0.0,
+                    10.0, 118.87826541800007, 30.95680770900003, 0.0,
+                    20.0, 118.8774481050001, 30.956860625000047, 0.0,
+                    30.0, 118.87660414600009, 30.956910105000077, 0.0,
+                    40.0, 118.8759846580001, 30.95694296000005, 0.0,
+                    50.0, 118.87542502500003, 30.956978761000073, 0.0,
+                    60.0, 118.87473380100005, 30.957024103000037, 0.0
+
+                ]
+            }
+        }];
+
+        var dataSourcePromise;
+        var i = 30.957024;
+        var a = 60;
+        setInterval(function() {
+            i += 0.0001;
+            a += 10;
+            // 路径添加节点
+            czml[1].position.cartographicDegrees.push(a, 118.8747338, i, 0);
+            // 修改当前时间，防止每次添加新路径时，方块回到原点
+            czml[0].clock.currentTime = viewer.clock.currentTime.toString();
+            // 清空之前数据，避免数据越来越多
+            viewer.entities.removeAll();
+            // 重新添加修改之后的数据
+            viewer.dataSources.add(Cesium.CzmlDataSource.load(czml));
+        }, 1000);
+
+        dataSourcePromise = Cesium.CzmlDataSource.load(czml);
+        viewer.dataSources.add(dataSourcePromise);
+        viewer.zoomTo(dataSourcePromise);
+    </script>
+</body>
+
+</html>
