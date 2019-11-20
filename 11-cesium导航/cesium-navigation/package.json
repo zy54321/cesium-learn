@@ -1,0 +1,11 @@
+{
+  "name": "cesium-navigation",
+  "version": "1.0.0",
+  "description": "cesium导航模块",
+  "main": "index.js",
+  "repository": "https://github.com/solocao/cesium-navigation.git",
+  "author": "solocao <solocao@126.com>",
+  "license": "MIT",
+  "_from": "cesium-navigation@1.0.0",
+  "_resolved": "http://registry.npm.taobao.org/cesium-navigation/download/cesium-navigation-1.0.0.tgz"
+}
