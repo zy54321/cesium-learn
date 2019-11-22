@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8">
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Hello World!</title>
+    <script src="../Build/CesiumUnminified/Cesium.js"></script>
+    <style>
+        @import url(../Build/CesiumUnminified/Widgets/widgets.css);
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .canvas {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        display:none;
+    }
+    #canvas-a {
+        top: 10px;
+    }
+    #canvas-b {
+        top: 120px;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="cesiumContainer" class="fullSize">
+        <div id="cesiumxin" style="position:fixed;left:0;z-index:99"><a href="http://cesium.xin" style="color:aliceblue;text-decoration:none">cesium中文网 http://cesium.xin </a></div>
+    </div>
+    <div id="loadingOverlay"><h1>Loading...</h1></div>
+    <div id="toolbar"></div>
+    <canvas id="canvas-a" class="canvas" width="700" height="100"></canvas>
+    <canvas id="canvas-b" class="canvas" width="700" height="100"></canvas>
+    <script>
+        var viewer = new Cesium.Viewer('cesiumContainer', 
+        {
+            imageryProvider: new Cesium.SingleTileImageryProvider({
+               url: '../img/worldimage.jpg'
+            }),
+            homeButton: false,
+            baseLayerPicker: false,
+            navigationHelpButton: false,
+            animation: false,
+            timeline: false,
+            fullscreenButton: false,
+            vrButton: false
+        });
+
+        var rotation = Cesium.Math.toRadians(30);
+        var curCanvas = 'a';
+        function getRotationValue() {
+            rotation += 0.005;
+            return rotation;
+        }
+
+        function drawCanvas(time, result) {
+            var canvas = document.getElementById("canvas-" + curCanvas);
+            var context = canvas.getContext('2d');
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.font = 'italic 40pt Calibri';
+            context.fillStyle = "red";
+            context.fillText(Cesium.JulianDate.toDate(Cesium.JulianDate.now()).getTime(), 20, 100);
+            //console.log(Cesium.JulianDate.toDate(time).getTime());
+            curCanvas = curCanvas === 'a' ? 'b' : 'a';
+            return canvas;
+        }
+
+        viewer.entities.add({
+            name: 'Rotating rectangle with rotating texture coordinate',
+            rectangle: {
+                coordinates: Cesium.Rectangle.fromDegrees(-90.0, 30.0, -70.0, 35.0),
+                material: new Cesium.ImageMaterialProperty({
+                    image: new Cesium.CallbackProperty(drawCanvas, false),
+                    transparent: true
+                }),
+                rotation: new Cesium.CallbackProperty(getRotationValue, false),
+                stRotation: new Cesium.CallbackProperty(getRotationValue, false)
+            }
+        });
+        viewer.zoomTo(viewer.entities);
+    </script>
+</body>
+
+</html>
