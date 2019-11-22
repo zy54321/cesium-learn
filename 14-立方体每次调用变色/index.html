@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8">
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Hello World!</title>
+    <script src="../Build/CesiumUnminified/Cesium.js"></script>
+    <style>
+        @import url(../Build/CesiumUnminified/Widgets/widgets.css);
+
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cesiumContainer">
+        <div id="cesiumxin" style="position:fixed;left:0;z-index:99"><a href="http://cesium.xin"
+                style="color:aliceblue;text-decoration:none">cesium中文网 http://cesium.xin </a></div>
+    </div>
+    <script>
+        var viewer = new Cesium.Viewer('cesiumContainer',
+            {
+                imageryProvider: new Cesium.SingleTileImageryProvider({
+                    url: '../img/worldimage.jpg'
+                }),
+
+                homeButton: false,
+                //sceneModePicker: false,
+                baseLayerPicker: false,
+                navigationHelpButton: false,
+                animation: false,
+                timeline: false,
+                fullscreenButton: false,
+                vrButton: false
+            });
+
+        //let rect = viewer.entities.add({
+        //    name: 'Red translucent rectangle',
+        //    rectangle: {
+        //        coordinates:new Cesium.Rectangle.fromDegrees(0.0,0.0,60.0,60.0) ,
+        //        material: Cesium.Color.RED.withAlpha(0.6)
+        //    }
+        //});
+
+        //setInterval(function(){
+        //    rect.rectangle.material.color= Cesium.Color.fromRandom({
+        //        minimumRed : 0.75,
+        //        minimumGreen : 0.75,
+        //        minimumBlue : 0.75,
+        //        alpha : 0.5
+        //    });
+        //},1000);
+
+        //每次调用时都会有新颜色
+        var randomColor = new Cesium.CallbackProperty(function (time, result) {
+            return Cesium.Color.fromRandom({ alpha: 0.5 }, result);
+        }, false);
+
+        var entity = viewer.entities.add({
+            
+            name: 'Red box with black outline',
+            position: Cesium.Cartesian3.fromDegrees(-107.0, 40.0, 300000.0),
+            box: {
+                dimensions: new Cesium.Cartesian3(400000.0, 300000.0, 500000.0),
+                // material : new Cesium.ColorMaterialProperty(randomColor)
+                
+                material: new Cesium.Color(0.96, 0.1, 0.1, 0.6)
+            }
+        });
+
+        var r,g,b,a
+        setInterval(function () {
+            r = Math.random().toFixed(1);
+            g = Math.random().toFixed(1);
+            b = Math.random().toFixed(1);
+            a = Math.random().toFixed(1);
+            entity.box.material = new Cesium.Color(r, g, b, a)
+        }, 1000)
+
+        function createDescriptionCallback() {
+            var description = "你好啊！";
+            return function (time, result) {
+                return description + time.toString();
+            };
+        }
+
+        entity.description = new Cesium.CallbackProperty(createDescriptionCallback(), true);
+
+        viewer.zoomTo(viewer.entities);
+    </script>
+</body>
+
+</html>
