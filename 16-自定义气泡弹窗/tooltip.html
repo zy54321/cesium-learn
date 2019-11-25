@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8">
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>Hello World!</title>
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <style>
+        @import url(../Build/Cesium/Widgets/widgets.css);
+
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="cesiumContainer">
+        <div id="cesiumxin" style="position:fixed;left:0;z-index:99"><a href="http://cesium.xin"
+                style="color:aliceblue;text-decoration:none">http://cesium.xin <label for="">cesium中文网 http://cesium.xin
+                </label></a></div>
+    </div>
+    <script>
+        //封装TooltipCesium对象
+        var TooltipCesium = (function () {
+            var isInit = false;
+            var viewer;
+            var labelEntity;
+
+            function _() { };
+
+            _.initTool = function (_viewer) {
+                if (isInit) { return; }
+                viewer = _viewer;
+                labelEntity = viewer.entities.add({
+                    position: Cesium.Cartesian3.fromDegrees(0, 0),
+                    label: {
+                        text: '提示',
+                        font: '15px sans-serif',
+                        pixelOffset: new Cesium.Cartesian2(8, 8),//y大小根据行数和字体大小改变
+                        horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+                        showBackground: true,
+                        backgroundColor: new Cesium.Color(0.165, 0.165, 0.165, 1.0)
+                    }
+                });
+                labelEntity.show = false;
+                isInit = true;
+            };
+
+            _.setVisible = function (visible) {
+                if (!isInit) { return; }
+                labelEntity.show = visible ? true : false;
+            };
+
+
+            _.showAt = function (position, message) {
+                if (!isInit) { return; }
+                if (position && message) {
+                    labelEntity.show = true;
+                    var cartesian = viewer.camera.pickEllipsoid(position, viewer.scene.globe.ellipsoid);// 
+                    if (cartesian) {
+                        labelEntity.position = cartesian;
+                        labelEntity.show = true;
+                        labelEntity.label.text = message;
+                    } else {
+                        labelEntity.show = false;
+                    }
+                }
+            };
+
+
+            _.showAtCartesian = function (cartesian, message) {
+                if (!isInit) { return; }
+                if (cartesian && message) {
+                    labelEntity.show = true;
+                    labelEntity.position = cartesian;
+                    labelEntity.show = true;
+                    labelEntity.label.text = message;
+                }
+            };
+            return _;
+        })();
+
+
+        var viewer = new Cesium.Viewer('cesiumContainer');
+
+        var scene = viewer.scene;
+        var handler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
+        var ellipsoid = scene.globe.ellipsoid;
+        var cartesian = null;
+
+        TooltipCesium.initTool(viewer);
+
+
+        //监听鼠标单击事件
+        handler.setInputAction(function (movement) {
+            cartesian = viewer.camera.pickEllipsoid(movement.position, ellipsoid);
+            if (cartesian) {
+                TooltipCesium.showAt(movement.position, '要展示的信息 <br> 123456');
+                // TooltipCesium.showAtCartesian(cartesian, '要展示的信息');
+            } else {
+                TooltipCesium.setVisible(false);
+            }
+        }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    </script>
+</body>
+
+</html>
