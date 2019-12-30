@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8">
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <title>路径动画</title>
+    <script src="../Build/Cesium/Cesium.js"></script>
+    <style>
+        @import url(../Build/Cesium/Widgets/widgets.css);
+
+        html,
+        body,
+        #cesiumContainer {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div id="facilities">按钮</div> -->
+    <div id="cesiumContainer">
+
+    </div>
+    <script>
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            // 左下角动画插件隐藏
+            animation: true,
+            // 时间线，指示当前时间，并允许用户跳到特定时间
+            timeline: true,
+        });
+
+        // 地图变成黑色
+        var layer = new Cesium.MapboxImageryProvider({
+            mapId: 'mapbox.dark',
+            // accessToken: 'mapbox的token'
+        })
+        viewer.imageryLayers.addImageryProvider(layer)
+
+        var start = Cesium.JulianDate.fromDate(new Date(2019, 6, 28, 16));
+        var stop = Cesium.JulianDate.addSeconds(start, 10, new Cesium.JulianDate());
+
+        viewer.clock.startTime = start.clone();
+        viewer.clock.stopTime = stop.clone();
+        viewer.clock.currentTime = start.clone();
+        viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP;
+        viewer.clock.multiplier = 1;
+        viewer.clock.shouldAnimate = true;
+        viewer.timeline.zoomTo(start, stop);
+        var points = [
+            106.61821100437023, 29.67142210252407,
+            106.61671100437023, 29.66642210252407,
+            106.62041100437023, 29.66942210252407,
+            106.61571100437023, 29.66942210252407,
+            106.61971100437023, 29.66642210252407,
+            106.61821100437023, 29.67142210252407
+        ]
+        var carPath = {
+            "ROOT": {
+                "AnimationPaths": {
+                    "AnimationPath": {
+                        "-id": "1542CE28_B033_4C18_A409_A068BD89614C",
+                        "-describe": "AnimationPath",
+                        "Point": [
+                            {
+                                "-x": "-2051999.375000",
+                                "-y": "4813355.000000",
+                                "-z": "3634909.000000"
+                            },
+                            {
+                                "-x": "-2052033.375000",
+                                "-y": "4813350.000000",
+                                "-z": "3634896.500000"
+                            },
+                            {
+                                "-x": "-2052020.875000",
+                                "-y": "4813400.000000",
+                                "-z": "3634837.500000"
+                            },
+                            {
+                                "-x": "-2052022.375000",
+                                "-y": "4813399.500000",
+                                "-z": "3634837.250000"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+        var carPointsArr = [];
+        var carPathArr = carPath['ROOT']['AnimationPaths']['AnimationPath']['Point'];
+        for (var camPathI2 = 0; camPathI2 < carPathArr.length; camPathI2++) {
+            // 世界坐标转成经纬度
+            var ellipsoid = viewer.scene.globe.ellipsoid;
+            var cartesian3 = new Cesium.Cartesian3(carPathArr[camPathI2]['-x'], carPathArr[camPathI2]['-y'], carPathArr[camPathI2]['-z']);
+            var cartographic = ellipsoid.cartesianToCartographic(cartesian3);
+            // 经度
+            var lng = Cesium.Math.toDegrees(cartographic.longitude);
+            // 纬度
+            var lat = Cesium.Math.toDegrees(cartographic.latitude);
+            // 高度
+            var alt = cartographic.height;
+            carPointsArr.push(lng);
+            carPointsArr.push(lat);
+            // carPointsArr.push(alt);
+        }
+        function flypath(json) {
+            var property = new Cesium.SampledPositionProperty();
+            for (var i = 0; i <= json.length; i += 2) {
+                var time = Cesium.JulianDate.addSeconds(start, (i / 2) * (1 / 5) * 10, new Cesium.JulianDate());
+                var position = Cesium.Cartesian3.fromDegrees(json[i], json[i + 1], 20);
+                property.addSample(time, position);
+                console.log(i * (1 / 6) * 10, i)
+            }
+            console.log(property)
+            return property;
+        }
+        console.log(carPointsArr)
+
+        var position = flypath(carPointsArr);
+        var entity = viewer.entities.add({
+            position: position,
+            // 一个指定实体方向的属性。
+            orientation: new Cesium.VelocityOrientationProperty(position),
+            // 获取或设置跟踪此对象时的建议初始偏移量。偏移通常在东 - 北 - 上参考帧中定义，但可以是另一帧，具体取决于对象的速度。
+            viewFrom: new Cesium.Cartesian3(100.0, 0.0, 0.0),
+            path: {
+                // 一个数字属性，指定采样位置时要步进的最大秒数。
+                resolution: 1,
+                // 指定要显示的对象前面的秒数。
+                leadTime: 0,
+                // 指定要显示的对象后面的秒数。
+                trailTime: 300,
+                material: new Cesium.PolylineGlowMaterialProperty({
+                    // 获取或设置指定发光强度的数字属性，以总线宽（小于1.0）的百分比表示。
+                    glowPower: 0.3,
+                    // 获取或设置指定渐变效果强度的数字属性，以总行长度的百分比表示。如果为1.0或更高，则不使用锥度效果。
+                    taperPower: 0.02,
+                    color: Cesium.Color.RED
+                }),
+                width: 10
+            }
+        });
+        // var polylines = viewer.entities.add({
+        //     name: 'Red corridor on surface with rounded corners',
+        //     polyline: {
+        //         positions: Cesium.Cartesian3.fromDegreesArray([
+        //             106.61821100437023, 29.67142210252407,
+        //             106.61671100437023, 29.66642210252407,
+        //             106.62041100437023, 29.66942210252407,
+        //             106.61571100437023, 29.66942210252407,
+        //             106.61971100437023, 29.66642210252407,
+        //             106.61821100437023, 29.67142210252407
+        //         ]),
+        //         width: 8,
+        //         arcType: Cesium.ArcType.RHUMB,
+        //         material: Cesium.Color.GREEN
+        //     }
+        // });
+
+        // // 泛光
+        // var viewModel = {
+        //     show: true,
+        //     glowOnly: false,
+        //     contrast: 128,
+        //     brightness: 0.3,
+        //     delta: 1.0,
+        //     sigma: 10,
+        //     stepSize: 4.0,
+        // };
+
+        // function updatePostProcess() {
+        //     var bloom = viewer.scene.postProcessStages.bloom;
+        //     viewer.scene.globe.enableLighting = true;
+        //     bloom.enabled = Boolean(viewModel.show);
+        //     bloom.uniforms.glowOnly = Boolean(viewModel.glowOnly);
+        //     bloom.uniforms.contrast = Number(viewModel.contrast);
+        //     bloom.uniforms.brightness = Number(viewModel.brightness);
+        //     bloom.uniforms.delta = Number(viewModel.delta);
+        //     bloom.uniforms.sigma = Number(viewModel.sigma);
+        //     bloom.uniforms.stepSize = Number(viewModel.stepSize);
+        // }
+        // updatePostProcess();
+
+        // viewer.zoomTo(entity); 
+        // 106.61821100437023, 29.67042210252407
+        viewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(113.0892177313208, 34.96742554419879, 3000)
+        })
+    </script>
+</body>
+
+</html>
