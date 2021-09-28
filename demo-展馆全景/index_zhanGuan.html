@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width, shrink-to-fit=no">
+    <title>全景展馆</title>
+    <link rel="stylesheet" href="./css/swiper-bundle.min.css">
+    <style>
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            /* background-color: #000; */
+        }
+
+        a:link,
+        a:visited {
+            color: #bdc3c7;
+        }
+
+        .credit {
+            position: absolute;
+            text-align: center;
+            width: 100%;
+            padding: 20px 0;
+            color: #fff;
+        }
+
+        .swiper-container {
+            width: 100%;
+            height: 150px;
+            position: absolute;
+            bottom: 0px;
+            background: rgba(81, 81, 81, 0.7);
+            padding: 15px 0px 15px 0px;
+        }
+
+        .swiper-slide {
+            text-align: center;
+            font-size: 18px;
+            background: #fff;
+
+            /* Center slide text vertically */
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-box-pack: center;
+            -ms-flex-pack: center;
+            -webkit-justify-content: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            -ms-flex-align: center;
+            -webkit-align-items: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="swiper-container">
+        <div class="swiper-wrapper" id="swiperBox">
+            <!-- <div class="swiper-slide">Slide 10</div> -->
+        </div>
+        <!-- Add Pagination -->
+        <div class="swiper-pagination"></div>
+        <!-- Add Arrows -->
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+
+    <script src="./js/swiper-bundle.min.js"></script>
+    <script src="./js/three.min.js"></script>
+    <script src="./js/panolens.min.js"></script>
+
+    <script>
+        var quanJingArr = [
+            {
+                name: "图书馆1",
+                imgUrl: "./img/hk/7OX5zA13d6Nm-OHAe1zkfw.jpg",
+                direction: {
+                    front: "./img/building.jpg",
+                    back: null,
+                    left: null,
+                    right: null,
+                }
+            },
+            {
+                name: "图书馆2",
+                imgUrl: "./img/hk/aVvLIR5aTOtYDdUSvoaY5Q.jpg",
+                direction: {
+                    front: null,
+                    back: null,
+                    left: null,
+                    right: null,
+                }
+            },
+            {
+                name: "图书馆3",
+                imgUrl: "./img/hk/K0aEqThheh43swmtusYxHw.jpg",
+                direction: {
+                    front: null,
+                    back: null,
+                    left: null,
+                    right: null,
+                }
+            },
+            {
+                name: "图书馆4",
+                imgUrl: "./img/hk/U5K1mWVsBDszjfgK4yZ1Iw.jpg",
+                direction: {
+                    front: null,
+                    back: null,
+                    left: null,
+                    right: null,
+                }
+            },
+            {
+                name: "图书馆5",
+                imgUrl: "./img/hk/vGyULRUFMWaTcRJXZi2YDw.jpg",
+                direction: {
+                    front: null,
+                    back: null,
+                    left: "./img/CAoSLEFGMVFpcE95NkRtd0J2d0Y5VTItTTN3eGp4SVJRN2JUeXoyc0IxMllVbEdx.jpg",
+                    right: null,
+                }
+            },
+        ];
+        // 声明全景容器
+        var viewer = new PANOLENS.Viewer({ output: 'console' });
+        // 初始视角容器-前后左右
+        var lookAtPositions = {
+            front: new THREE.Vector3(3945.23, 1000, 1000),
+            back: new THREE.Vector3(-3145.23, 1704.40, -1149.48),
+            left: new THREE.Vector3(1145.23, 704.40, 1149.48),
+            right: new THREE.Vector3(-3145.23, 704.40, -1149.48),
+        };
+
+        // 获取swiper容器
+        var swiperBox = document.getElementById("swiperBox");
+        for (var quanJingArrI0 = 0; quanJingArrI0 < quanJingArr.length; quanJingArrI0++) {
+            // 创建全景对象并添加到容器
+            var panoramas = new PANOLENS.ImagePanorama(quanJingArr[quanJingArrI0].imgUrl);
+            viewer.add(panoramas);
+            for (var directionItems in quanJingArr[quanJingArrI0].direction) {
+                if (quanJingArr[quanJingArrI0].direction[directionItems]) {
+                    console.log(quanJingArr[quanJingArrI0].direction[directionItems], panoramas);
+                    var linkPanoramas = new PANOLENS.ImagePanorama(quanJingArr[quanJingArrI0].direction[directionItems]);
+                    viewer.add(linkPanoramas);
+                    // 热点容器
+                    panoramas.link(linkPanoramas, lookAtPositions[directionItems]);
+                    // 跳转监听
+                    // panoramas.addEventListener('enter-fade-start', function () {
+                    //     // 设置聚焦视角
+                    //     viewer.tweenControlCenter(lookAtPositions[directionItems], 0);
+                    // });
+                }
+            }
+
+            var quanJingDivs = document.createElement("div");
+            quanJingDivs.style = "background: url('" + quanJingArr[quanJingArrI0].imgUrl + "') center center; background-size: 100% 100%; color: white;";
+            quanJingDivs.className = "swiper-slide";
+            quanJingDivs.panorama = panoramas;
+            var quanJingName = document.createElement("span");
+            quanJingName.style = "position: absolute; bottom: 0px;";
+            quanJingName.innerText = quanJingArr[quanJingArrI0].name;
+            quanJingDivs.appendChild(quanJingName);
+            swiperBox.appendChild(quanJingDivs);
+
+            // 底部菜单事件绑定
+            quanJingDivs.onclick = function () {
+                var _this = this;
+                console.log("点击全景图片", _this.panorama);
+                viewer.setPanorama(_this.panorama);
+                // 设置聚焦视角
+                viewer.tweenControlCenter(lookAtPositions["front"], 0);
+            };
+        };
+        // 初始视角
+        viewer.tweenControlCenter(lookAtPositions["front"], 0);
+
+        var swiper = new Swiper('.swiper-container', {
+            // loop: true,
+            speed: 500,
+            slidesPerView: 7,
+            spaceBetween: 30,
+            centeredSlides: true,
+            watchSlidesProgress: true,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+        });
+
+
+
+        // 热点容器
+        // var infospot = new PANOLENS.Infospot(500, './img/1941-battle-thumb.png');
+        // infospot.position.set(3945.23, 1000, 1000);
+        // infospot.addHoverText("The Story");
+        // infospot.addEventListener('click', function () {
+        //     viewer.setPanorama(panorama3);
+        // });
+        // panorama1.add(infospot);
+        // 验证-动态修改热点位置
+        // setTimeout(function () {
+        //     infospot.position.set(-3145.23, -3704.40, 1149);
+        // }, 5000)
+
+        // 初始视角容器
+        // var lookAtPositions = [
+        //     new THREE.Vector3(3945.23, 1000, 1000),
+        //     new THREE.Vector3(-3145.23, -3704.40, 1149.48),
+        //     new THREE.Vector3(-3145.23, -3704.40, 1149.48),
+        //     new THREE.Vector3(-3145.23, -3704.40, 1149.48),
+        //     new THREE.Vector3(-3145.23, -3704.40, 1149.48),
+        // ];
+        // 事件监听
+        // panorama1.addEventListener('enter-fade-start', function () {
+        //     // 设置聚焦视角
+        //     viewer.tweenControlCenter(lookAtPositions[0], 0);
+        // });
+        // panorama2.addEventListener('enter-fade-start', function () {
+        //     viewer.tweenControlCenter(lookAtPositions[1], 0);
+        // });
+        // panorama3.addEventListener('enter-fade-start', function () {
+        //     viewer.tweenControlCenter(lookAtPositions[2], 0);
+        // });
+        // panorama4.addEventListener('enter-fade-start', function () {
+        //     viewer.tweenControlCenter(lookAtPositions[3], 0);
+        // });
+        // panorama5.addEventListener('enter-fade-start', function () {
+        //     viewer.tweenControlCenter(lookAtPositions[4], 0);
+        // });
+
+        // 设置全景链接
+        // panorama1.link(panorama2, infospot, 400, './img/1941-battle-thumb.png');
+        // panorama2.link(panorama3, lookAtPositions[1], 400, './img/1941-battle-thumb.png');
+        // panorama3.link(panorama4, lookAtPositions[2], 400, './img/1941-battle-thumb.png');
+        // panorama4.link(panorama5, lookAtPositions[3], 400, './img/1941-battle-thumb.png');
+        // panorama5.link(panorama1, lookAtPositions[4], 400, './img/1941-battle-thumb.png');
+
+        // 添加three模型
+        // object = new THREE.Mesh(new THREE.TorusKnotGeometry(10, 3, 100, 16), new THREE.MeshNormalMaterial());
+        // object.position.z = -50;
+        // // Rotate the object
+        // viewer.addUpdateCallback(function () {
+        //     object.rotation.y += 0.01;
+        // });
+        // panorama1.add(object);
+    </script>
+
+</body>
+
+</html>
