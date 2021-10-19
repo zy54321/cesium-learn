@@ -1,0 +1,147 @@
+一.Cesium加载各类底图
+
+#此类加载的本质在于 new Cesium.ImageryProvider()
+
+Api defination：“Provides imagery to be displayed on the surface of an ellipsoid. This type describes an interface and is not intended to be instantiated directly.”
+
+imagerProvider不能直接实例化，必须使用具体的接口
+
+var viewer = new Cesium.Viewer("cesiumContainer",
+{imageryProvider:new Cesium.加载数据方式{
+  url:加载数据类型}),
+　其他控件设置
+});
+二.官方的ImageryProvider详细说明：
+Cesium内置以下ImageryProvider：
+Web Map Service (WMS) – OGC标准，用于从分布式地理空间数据库中请求地理区域的地图块。在Cesium中，请参见WebMapServiceImageryProvider。
+Tile Map Service (TMS) – 访问瓦片图的Rest接口。瓦片图被转换为MapTiler或GDAL2Tiles.参见TileMapServiceImageryProvider。
+OpenGIS Web Map Tile Service (WMTS) – 一个OGC标准，用于在互联网上提供预先绘制的地理参考瓦片图。在Cesium中，请参见WebMapServiceImageryProvider。
+OpenStreetMap – 访问OpenStreetMap瓦片图或任何Slippy瓦片图。有几种方式可以host these tiles 在Cesium中，请参加createOpenStreetMapImageryProvider。
+Bing Maps – 使用Bing Maps REST Services访问瓦片图。 在https://www.bingmapsportal.com/创建Bing地图的keys。在Cesium中, 请参见BingMapsImageryProvider。
+Esri ArcGIS MapServer – 使用ArcGIS Server REST API来访问ArcGIS MapServer上的瓦片图. 在Cesium中,请参见ArcGisMapServerImageryProvider。
+Google Earth Enterprise – 提供对存储Google Earth Enterprise服务器中的图层的访问。在Cesium中，请参见GoogleEarthImageryProvider。
+Mapbox – 使用Mapbox API访问瓦片图. 创建一个账户并提供access token. 在Cesium中, 请参见MapboxImageryProvider。
+Standard image files – 从图片中创建图层。在Cesium中, 请参见SingleTileImageryProvider。
+Custom tiling schemes – 使用UrlTemplateImageryProvider,通过使用URL模板，我们可以连接到大量图像源。 例如, TMS的url模板是 //cesiumjs.org/tilesets/imagery/naturalearthii/{z}/{x}/{reverseY}.jpg.
+Tile coordinates – 通过绘制每个瓦片图周围的边界并用其水平、X和Y坐标标记它，显示如何在特定的瓦片方案中将地球划分为多个瓦片图。
+
+
+　
+三、完成的Base加载封装
+用的最多的主要是UrlTemplateImageryLayer,url模版的影像加载，加载如google这类商业底图；SingleTileImageryProvider,单一瓦片影像加载，如单张图片；
+TileCoordinatesImageryProvider,瓦片坐标影像加载，加载经纬度网格图；WebMapServiceImageryProvider,WMS格式服务影像加载，也就是加载本地服务器发布的影像图。
+加载3dTiles等3D格式数据，不在本文梳理，另外总结。
+//1.加载url模版的地图影像UrltemplateImageryProvider，如google/高德/百度等
+  addGoogleImagery(){
+    //UrltemplateImageryProvider自定义加载影像方式
+    return new Cesium.UrlTemplateImageryProvider({
+      url:"http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&x={x}&y={y}&z={z}&s=Gali"
+    }) 
+  }
+//3.加载图片 图片地址及西南东北范围（单位度），图片也可以是其他形状（修改rectangle）
+  addPicImagery(picurl,west,south,east,north){
+    let opts = {
+      url:picurl,
+      rectangle:Cesium.Rectangle.fromDegrees(west,south,east,north)
+    };
+    return new Cesium.SingleTileImageryProvider(opts)
+  }
+//4.加载json格式
+  //#直接加载
+  addJsonImagery(jsonurl){
+    let viewer = this._viewer;
+    //一种方式
+    viewer.dataSources.add(Cesium.GeoJsonDataSource.load(jsonurl,{
+      stroke:Cesium.Color.RED,
+      strokeWidth:5,
+      fill:Cesium.Color.RED.withAlpha(0.1),
+      //fill:new Cesium.Color(0, 0, 0, 0)//设置纯透明后，必须点击到polygon边界才显示提示框
+    })); 
+    //另一种方式
+    // let promise = Cesium.GeoJsonDataSource.load(jsonurl);
+    // promise.then(function(jsondata){
+    //   viewer.dataSources.add(jsondata);
+    //   let entities =dataSources.entities.values;
+    //   for (let entity of entities) {
+    //     entity.polygon.fill=false;//设置无填充后，必须点击到polygon边界才显示提示框
+    //     entity.polygon.outline = true;
+    //     entity.polygon.outlineColor = Cesium.Color.RED;
+    //     entity.polygon.width=5//无效，polygon.width不能超过1        
+    //   }
+    // })
+  }
+//5.加载kml格式
+  AddKmlData(url){
+    let viewer = this._viewer;
+    var promiseKml = new Cesium.KmlDataSource.load(url, {
+      clampToGround:true
+    });
+    promiseKml.then(kmlData => {
+      viewer.dataSources.add(kmlData);
+      let entities = kmlData.entities.values;
+      for (let entity of entities) {
+        entity.polyline.show = true;
+        entity.polyline.material = new Cesium.PolylineGlowMaterialProperty({
+          glowPower:0.5,
+          color:Cesium.Color.BLUE
+        })        
+      }
+    });
+  }
+//6.发布的wms地图服务
+  //使用Geoserver发布，网上有很多教程如何使用，使用接口WebMapServiceImageryProvider
+  addWmsImagery(wmsurl,wmslayer){
+    let viewer = this._viewer;
+    let wmsImage = new Cesium.WebMapServiceImageryProvider({
+      url:wmsurl（"http://127.0.0.1:8083/geoserver/cesium/wms",
+      layers : wmslayer（cesium:图层）,
+      fill : false,
+      parameters : {
+        service : "WMS",
+        format : "image/png",
+        transparent : true
+      }
+    });
+    viewer.imageryLayers.addImageryProvider(wmsImage);
+    //viewer.imageryLayers.add(wmsImage);
+  }
+//7.加载tiff地形，首先地形文件一定要有坐标，坐标系是非常重要的，接口使用WebMapServiceImageryProvider,使用geoserver发布
+  addTiffImagery(tiffurl,tifflayer){
+    let viewer = this._viewer;
+    let tiffProvider = new Cesium.WebMapServiceImageryProvider({
+      url:tiffurl,
+      layers: tifflayer,
+      parameters:{
+        service:"WMS",
+        format:"image/png",
+        transparent:true   
+      }
+    });
+    viewer.imageryLayers.addImageryProvider(tiffProvider);
+  }
+//8.加载BingMaps，url好像已经失效
+  addBingMaps(){
+    return new Cesium.BingMapsImageryProvider({
+      url : 'https://dev.virtualearth.net',
+      mapStyle: Cesium.BingMapsStyle.ROAD
+    })
+  }
+//9.加载ArcGIS World Street Maps
+  addArcGISMap(){
+    return new Cesium.ArcGisMapServerImageryProvider({
+      url : 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer'
+    });
+  }
+//10.加载OpenStreetMaps 
+  addOpenStreetMap(){
+    return new Cesium.Cesium.createOpenStreetMapImageryProvider({
+      url : 'https://stamen-tiles.a.ssl.fastly.net/watercolor/',
+      fileExtension: 'jpg',
+      credit: 'Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA.'
+    });
+  }
+//11.加载Tile Coordinates 坐标网格
+  addTileCoord(){
+    return new Cesium.TileCoordinatesImageryProvider();
+  }
+转载：别人翻译的影像图层教程 https://www.jianshu.com/p/98d4c0b2c618
